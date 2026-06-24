@@ -1,0 +1,3 @@
+keymint>=1.0.0
+PyQt6>=6.6.0
+python-dotenv>=1.0.0
