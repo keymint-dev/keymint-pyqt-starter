@@ -1,7 +1,7 @@
 import sys
 import os
 from dotenv import load_dotenv
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel
+from PyQt6.QtWidgets import QApplication, QDialog, QMainWindow, QLabel
 from license_manager import is_activated, get_stored_key, activate_license
 from activation_dialog import ActivationDialog
 
