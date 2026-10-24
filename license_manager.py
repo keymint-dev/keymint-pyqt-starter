@@ -5,6 +5,11 @@ import uuid
 import os
 from PyQt6.QtCore import QSettings
 from keymint import KeyMint
+from dotenv import load_dotenv
+
+# Load .env before reading settings. main.py imports this module before its
+# own load_dotenv() call runs, so reading here first would miss .env values.
+load_dotenv()
 
 PRODUCT_ID = os.environ.get("KEYMINT_PRODUCT_ID", "")
 CLIENT_API_KEY = os.environ.get("KEYMINT_CLIENT_API_KEY", "")
