@@ -1,16 +1,17 @@
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QLabel, QLineEdit,
-    QPushButton, QMessageBox,
+    QPushButton, QMessageBox, QFileDialog,
 )
 from PyQt6.QtCore import Qt
-from license_manager import activate_license, get_stored_key
+from license_manager import activate_license, get_stored_key, import_offline_license
 
 
 class ActivationDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, message=""):
         super().__init__(parent)
+        self.offline_expires_at = None  # set when an offline license is imported
         self.setWindowTitle("Activate License")
-        self.setFixedSize(420, 240)
+        self.setFixedSize(420, 290)
         self.setWindowFlags(
             self.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint
         )
@@ -35,7 +36,11 @@ class ActivationDialog(QDialog):
         self.activate_btn.clicked.connect(self._on_activate)
         layout.addWidget(self.activate_btn)
 
-        self.status_label = QLabel("")
+        self.import_btn = QPushButton("Import offline license (.lic)…")
+        self.import_btn.clicked.connect(self._on_import)
+        layout.addWidget(self.import_btn)
+
+        self.status_label = QLabel(message)
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.status_label.setWordWrap(True)
         layout.addWidget(self.status_label)
@@ -58,3 +63,21 @@ class ActivationDialog(QDialog):
         else:
             self.status_label.setText(f"Failed: {result['message']}")
             self.activate_btn.setEnabled(True)
+
+    def _on_import(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Import offline license", "", "Keymint license (*.lic);;All files (*)"
+        )
+        if not path:
+            return
+        self.status_label.setText("")
+        result = import_offline_license(path)
+        if result["success"]:
+            self.offline_expires_at = result["license"].expires_at
+            QMessageBox.information(
+                self, "Success",
+                f"Offline license valid until {self.offline_expires_at.astimezone():%Y-%m-%d}",
+            )
+            self.accept()
+        else:
+            self.status_label.setText(result["message"])
