@@ -24,7 +24,10 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Compile check
-        run: python -m py_compile main.py license_manager.py activation_dialog.py scripts/smoke.py
+        run: python -m py_compile main.py license_manager.py activation_dialog.py offline_license.py scripts/smoke.py
+
+      - name: Unit tests
+        run: python -m unittest discover tests
 
   smoke:
     name: Live smoke test
