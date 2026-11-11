@@ -16,14 +16,14 @@ Copy `.env.example` to `.env` and set:
 
 | Variable | Description |
 |---|---|
-| `KEYMINT_CLIENT_API_KEY` | Client API key from [Keymint Dashboard](https://app.keymint.dev) |
+| `KEYMINT_CLIENT_API_KEY` | API key with the `client` scope from the [Keymint Dashboard](https://app.keymint.dev) (starts with `km_live_`). Never ship an admin key in the app. |
 | `KEYMINT_PRODUCT_ID` | Your product ID |
 | `KEYMINT_PUBLIC_KEY` | Optional. Public key PEM for [offline licenses](#offline-licenses) |
 
 ## What's Included
 
 - **Activation dialog** — PyQt6 dialog prompting for a license key
-- **Cross-platform machine ID** — Windows (WMIC), macOS (IOPlatformUUID), Linux (/etc/machine-id)
+- **Stable installation ID** — the `hostId` comes from the SDK's `identity.get_or_create_installation_id()`: a 64-character SHA-256 ID saved in `~/.keymint/installation-id` and reused on every launch. If it can't be read or saved, the app shows an error instead of using a shared or temporary ID.
 - **Persistent storage** — uses `QSettings` to store license state across sessions
 - **Keymint Python SDK** — uses the official `keymint` package for API calls
 
@@ -39,11 +39,15 @@ The file is stored in `QSettings` and re-checked on launch. Expiry is checked ag
 
 Tests: `python -m unittest discover tests`.
 
+## Upgrading from an earlier version of this starter
+
+Earlier versions used a 16-character hash of the hardware ID as the `hostId`. This version uses the SDK's installation ID instead, so an existing install reports a new `hostId`: on next launch it activates as a new device (using another activation slot, or failing with `activation_limit_reached` if none is left; remove the old device from the license in the dashboard), and offline `.lic` files signed for the old ID must be signed again for the new one.
+
 ## Project Structure
 
 ```
 ├── main.py               # App entry point, launches activation or main window
-├── license_manager.py    # Keymint SDK calls, machine ID, license storage
+├── license_manager.py    # Keymint SDK calls, installation ID, license storage
 ├── offline_license.py    # Offline .lic verification
 ├── activation_dialog.py  # PyQt6 activation dialog
 ├── requirements.txt      # Python dependencies
